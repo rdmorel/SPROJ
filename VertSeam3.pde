@@ -42,7 +42,7 @@ void setup() {
        root = bottomRow[i];
      }
    }
-   Node[] vertSeam = new Node[img.height]; // contains all nodes in lowest energy seam
+   Node[] vertSeam = new Node[img.height*2]; // contains all nodes in lowest energy seam
    Node pixel = nodeArray[root];
    for (int i = 0; i<vertSeam.length; i++){
      vertSeam[i] = pixel;
