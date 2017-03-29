@@ -19,6 +19,27 @@ void setup() {
      int ypos = i/img.width; // calculating x and y coordinates based on position in array
      int xpos = i - (ypos * img.width);
      nodeArray[i] = new Node (xpos, ypos, nodeArray, img, i);
+/**
+ * Compute Horizontal Seam
+ *
+ */
+ 
+//import java.util*;
+ 
+PImage img;
+ 
+void setup() {
+  img = loadImage("towerfilter.png"); // image that has been put through sobel filter
+  size(img.width, img.height);
+  
+  image(img, 0, 0);
+  img.loadPixels();
+  
+  Node[] nodeArray = new Node[img.pixels.length];// create array of Nodes
+   for (int i = 0; i<img.pixels.length; i++){// for each pixel, create corresponding Node
+     int ypos = i/img.width; // calculating x and y coordinates based on position in array
+     int xpos = i - (ypos * img.width);
+     nodeArray[i] = new Node (xpos, ypos, nodeArray, img, i);
    }
    for (int i = 0; i<nodeArray.length; i++){
      nodeArray[i].setParent();// set parent for each node
@@ -41,9 +62,11 @@ void setup() {
      }
    }
    Node[] horizSeam = new Node[img.width*2]; // contains all nodes in lowest energy seam
+   int[] seamIndex = new int[horizSeam.length];// array containing indexes of all pixels in seam
    Node pixel = nodeArray[root];
    for (int i = 0; i<horizSeam.length; i++){
      horizSeam[i] = pixel;
+     seamIndex[i] = pixel.getIndex();
      img.pixels[pixel.getY()*img.width + pixel.getX()] = color(255, 0, 0);// color seam red
      fill(255,0,0);
      noStroke();
@@ -53,7 +76,28 @@ void setup() {
    }
    
    img.updatePixels();
-   //image(img, 0, 0);
+   
+   PImage post = createImage(img.width, img.height - 1, RGB);//final image
+   post.loadPixels();
+   int j = 0;
+   boolean inSeam = false;
+   for (int i = 0; i < img.pixels.length; i++){
+     for (int x = 0; x < seamIndex.length; x++){
+       if (i == seamIndex[x]){ // check to see if pixel is in the seam
+         inSeam = true;
+       }
+     }
+     if (inSeam == false) { // if pixel is not in seam, copy it into new image
+       post.pixels[j] = img.pixels[i];
+       j++;
+     }
+     else { inSeam = false; } // if pixel is in seam, skip it and reset inSeam variable
+   }
+   post.updatePixels();
+   image(post,0,0);
+   post.save("carved.png");
+   System.out.println(post.height); //This is returning 406, but the saved file says 407?
+
  }
  
 void draw() {
