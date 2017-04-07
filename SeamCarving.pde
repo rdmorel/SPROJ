@@ -24,11 +24,11 @@ void setup() {
 }
 void carve(PImage img){
   
-  if (targetwidth > img.width){
+  if (targetwidth < img.width){
     vertseam(img);
   }
   
-  else if (targetheight > img.height){
+  else if (targetheight < img.height){
     horizseam(img);
   }
   
@@ -65,14 +65,13 @@ void vertseam(PImage orig){
        root = bottomRow[i];
      }
    }
-   Node[] vertSeam = new Node[img.height*2]; // contains all nodes in lowest energy seam
+   Node[] vertSeam = new Node[img.height]; // contains all nodes in lowest energy seam
    int[] seamIndex = new int[vertSeam.length];// array containing indexes of all pixels in seam
    Node pixel = nodeArray[root];
    for (int i = 0; i<vertSeam.length; i++){
      vertSeam[i] = pixel;
      seamIndex[i] = pixel.getIndex();
      pixel = pixel.getparent();
-     i++;
    }
    
    img.updatePixels();
@@ -88,6 +87,7 @@ void vertseam(PImage orig){
        }
      }
      if (inSeam == false) { // if pixel is not in seam, copy the pixel from the original into new image
+       System.out.println(i);
        post.pixels[j] = orig.pixels[i];
        j++;
      }
@@ -130,14 +130,13 @@ void horizseam(PImage orig){
        root = leftSide[i];
      }
    }
-   Node[] horizSeam = new Node[img.width*2]; // contains all nodes in lowest energy seam
+   Node[] horizSeam = new Node[img.width]; // contains all nodes in lowest energy seam
    int[] seamIndex = new int[horizSeam.length];// array containing indexes of all pixels in seam
    Node pixel = nodeArray[root];
    for (int i = 0; i<horizSeam.length; i++){
      horizSeam[i] = pixel;
      seamIndex[i] = pixel.getIndex();
      pixel = pixel.getparent();
-     i++;
    }
    
    img.updatePixels();
@@ -248,8 +247,8 @@ public class Node {// each node corresponds to a pixel
   public int getIndex() { return this.index; }
 
   //do I even need setter functions?
-  public void setX(int xval) { this.x = xval; }
-  public void setY(int yval) { this.y = yval; }
+  public void setX() { this.x = this.getIndex() - (this.getY()*img.width); }
+  public void setY() { this.y = this.getIndex() / img.width; }
   public void setEnergy(double en) { this.energy = en; }
   public void setSum(double sm) { this.sum = sm; }
   public void setIndex(int ind) { this.index = ind; }
@@ -262,10 +261,14 @@ public class Node {// each node corresponds to a pixel
     Node n2;
     Node n3;
     
-    if (this.y == 0){ // top row
-      this.parent = null; // sum is already set to energy
+    this.setY();
+    this.setX();
+    if (this.getY() == 0){ // top row
+      this.parent = this; // sum is already set to energy
     }
-    else if (this.x == 0){ // left column 
+    else if (this.getX() == 0){ // left column
+      //System.out.println(this.getIndex());
+      //System.out.println(this.getX() + "," + this.getY());
       sum1 = this.getSum() + nodeArray[(this.getIndex() - img.width + 1)].getSum(); // node above & right
       n1 = nodeArray[(this.getIndex() - img.width + 1)];
       sum2 = this.getSum() + nodeArray[(this.getIndex() - img.width)].getSum(); // node above
