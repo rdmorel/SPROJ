@@ -1,4 +1,4 @@
-// Seam Carving Take 2
+// Seam Carving
 
 double[][] kernelx = {{ -1, +0, +1}, 
                     { -2, +0, +2}, 
@@ -14,9 +14,8 @@ int targetheight = 400;
 
 void setup(){
   img = loadImage("tower.jpg");
-  size(img.width, img.height);
-  img.loadPixels();
-  
+  size(targetwidth, targetheight);
+  img.loadPixels(); 
   carve(img);  
 }
 
@@ -31,12 +30,13 @@ void carve(PImage img){
   }
   else{
     img.save("carved.png");
+    System.out.println("carved");
   }
 }
 
 void vertseam(PImage original, PImage filtered){
   img = filtered; // image that has been put through sobel filter
-  size(img.width, img.height);
+  //size(img.width, img.height);
   
   img.loadPixels();
   
@@ -102,7 +102,7 @@ void vertseam(PImage original, PImage filtered){
 
 void horizseam(PImage original, PImage filtered){
   img = filtered; // image that has been put through sobel filter
-  size(img.width, img.height);
+  //size(img.width, img.height);
   
   img.loadPixels();
   HNode[] nodeArray = new HNode[img.pixels.length];// create array of Nodes
