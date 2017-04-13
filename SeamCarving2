@@ -9,8 +9,8 @@ double[][] kernely = {{ +1, +2, +1},
                     { -1, -2, -1}};
 
 PImage img;
-int targetwidth = 590; //set target dimensions
-int targetheight = 400;
+int targetwidth = 550; //set target dimensions
+int targetheight = 407;
 
 void setup(){
   img = loadImage("tower.jpg");
@@ -21,23 +21,19 @@ void setup(){
 
 void carve(PImage img){
   
-  if (targetwidth < img.width){
-    vertseam(img, sobel(img));
+  while (targetwidth < img.width){
+    img = vertseam(img, sobel(img));
   }
   
-  else if (targetheight < img.height){
-    horizseam(img, sobel(img));
+  while (targetheight < img.height){
+    img = horizseam(img, sobel(img));
   }
-  else{
-    img.save("carved.png");
-    System.out.println("carved");
-  }
+  img.save("carved.jpg");
+  System.out.println("carved");
 }
 
-void vertseam(PImage original, PImage filtered){
-  img = filtered; // image that has been put through sobel filter
-  //size(img.width, img.height);
-  
+PImage vertseam(PImage original, PImage filtered){
+  img = filtered; // image that has been put through sobel filter  
   img.loadPixels();
   
   VNode[] nodeArray = new VNode[img.pixels.length];// create array of Nodes
@@ -56,6 +52,8 @@ void vertseam(PImage original, PImage filtered){
    for (int i = 0; i<nodeArray.length; i++){
      if (nodeArray[i].getY() == img.height - 1){
         bottomRow[num] = i;
+        //if ( num < 10 ){ //2 pixel black border around edges of filter!
+        //System.out.println(nodeArray[i].getX() + ", " + nodeArray[i].getSum());}
         num++;
      }
    }
@@ -87,6 +85,7 @@ void vertseam(PImage original, PImage filtered){
      for (int x = 0; x < seamIndex.length; x++){
        if (i == seamIndex[x]){ // check to see if pixel is in the seam
          inSeam = true;
+         //System.out.println(vertSeam[x].getX() + ", " + vertSeam[x].getY());
        }
      }
      if (inSeam == false) { // if pixel is not in seam, copy it into new image
@@ -97,10 +96,10 @@ void vertseam(PImage original, PImage filtered){
    }
    post.updatePixels();
    image(post,0,0);
-   carve(post);  
+   return(post);  
 }
 
-void horizseam(PImage original, PImage filtered){
+PImage horizseam(PImage original, PImage filtered){
   img = filtered; // image that has been put through sobel filter
   //size(img.width, img.height);
   
@@ -144,25 +143,33 @@ void horizseam(PImage original, PImage filtered){
    
    img.updatePixels();
    
-   PImage post = createImage(img.width, img.height - 1, RGB);//final image
+   PImage post = createImage(img.width, img.height -1, RGB);//final image
    post.loadPixels();
-   int j = 0;
-   boolean inSeam = false;
-   for (int i = 0; i < img.pixels.length; i++){
-     for (int x = 0; x < seamIndex.length; x++){
-       if (i == seamIndex[x]){ // check to see if pixel is in the seam
-         inSeam = true;
+   for (int x = 0; x < original.width; x++){
+     boolean carved = false;
+     for (int y = 0; y < original.height-1; y++){
+       if (carved == false){
+         for (int i = 0; i < seamIndex.length; i++){
+           if (y*img.width + x == seamIndex[i]){
+             carved = true;
+             int y2 = y;
+             while (y2 < post.height){
+               post.pixels[y2*original.width + x] = original.pixels[(y2+1)*img.width + x];
+               y2++;
+             }
+           }
+           else{
+             //System.out.println(y*img.width);
+             post.pixels[y*original.width + x] = original.pixels[y*original.width + x];
+           }    
+         }
        }
-     }
-     if (inSeam == false) { // if pixel is not in seam, copy it into new image
-       post.pixels[j] = original.pixels[i]; //ARRAYOUTOFBOUNDS
-       j++;
-     }
-     else { inSeam = false; } // if pixel is in seam, skip it and reset inSeam variable
+     }  
    }
+   
    post.updatePixels();
    image(post,0,0);
-   carve(post);
+   return(post);
  }
 
 PImage sobel(PImage img){
@@ -211,8 +218,25 @@ PImage sobel(PImage img){
       edgeImg.pixels[y*img.width + x] = color(magintr, magintg, magintb);
     }
   }
+  for (int i = 0; i < edgeImg.pixels.length; i++){
+    int ypos = i/img.width;
+    int xpos = i - (ypos * img.width);
+    if (ypos == 0){
+      edgeImg.pixels[i] = edgeImg.pixels[i+img.width];
+    }
+    else if (ypos == img.height - 1){
+      edgeImg.pixels[i] = edgeImg.pixels[i-img.width];
+    }
+    if (xpos == 0){
+      edgeImg.pixels[i] = edgeImg.pixels[i+1];
+    }
+    else if (xpos == img.width-1){
+      edgeImg.pixels[i] = edgeImg.pixels[i-1];
+    }
+  }
   // State that there are changes to edgeImg.pixels[]
   edgeImg.updatePixels();
+  edgeImg.save("filtered.jpg");
   return(edgeImg);
 }
 
