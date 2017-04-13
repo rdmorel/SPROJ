@@ -236,7 +236,7 @@ PImage sobel(PImage img){
   }
   // State that there are changes to edgeImg.pixels[]
   edgeImg.updatePixels();
-  edgeImg.save("filtered.jpg");
+  //edgeImg.save("filtered.jpg");
   return(edgeImg);
 }
 
